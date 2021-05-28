@@ -5,7 +5,10 @@ import com.spring.basics.api.request.UpdateWorkerRequest;
 import com.spring.basics.api.response.CreateWorkerResponse;
 import com.spring.basics.api.response.WorkerResponse;
 import com.spring.basics.entity.*;
-import com.spring.basics.exception.*;
+import com.spring.basics.exception.ActuationAreaNotFoundException;
+import com.spring.basics.exception.CepNotFoundException;
+import com.spring.basics.exception.WorkerAlreadyRegisteredException;
+import com.spring.basics.exception.WorkerNotFoundException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -34,8 +37,6 @@ public class WorkerService {
     private AvaliationRepository avaliationRepository;
     @Autowired
     private GoogleMapsIntegration googleMapsIntegration;
-    @Autowired
-    private CommonParameterRepository commonParameterRepository;
 
     public CreateWorkerResponse createWorker(CreateWorkerRequest workerRequest) {
         logger.info("Received request to create worker with cpf: {}", workerRequest.getCpf());
@@ -62,7 +63,6 @@ public class WorkerService {
 
         List<ActuationArea> actuationAreas = getActuationAreasByCustomerId(optionalWorker.get().getId());
         List<Avaliation> avaliations = avaliationRepository.findAllByIdWorker(optionalWorker.get().getId());
-        updateRemainingContacts(optionalWorker.get());
 
         logger.info("Completed request to find worker with id: {}", id);
         return convertToCustomerResponse(optionalWorker.get(), actuationAreas, avaliations);
@@ -77,7 +77,6 @@ public class WorkerService {
 
         List<ActuationArea> actuationAreas = getActuationAreasByCustomerId(optionalWorker.get().getId());
         List<Avaliation> avaliations = avaliationRepository.findAllByIdWorker(optionalWorker.get().getId());
-        updateRemainingContacts(optionalWorker.get());
 
         logger.info("Completed request to find worker with cpf: {}", cpf);
         return convertToCustomerResponse(optionalWorker.get(), actuationAreas, avaliations);
@@ -115,18 +114,6 @@ public class WorkerService {
     }
     //PRIVATE METHODS
 
-    private void updateRemainingContacts(Worker worker) {
-
-        if (worker.getRenewalDate().isBefore(LocalDateTime.now())) {
-            worker.setRenewalDate(LocalDateTime.now().plusMonths(1));
-            worker.setRemainingContacts(getRemainingContactsByPlan(worker.getPlan()));
-            workerRepository.saveAndFlush(worker);
-        }
-    }
-
-    private Long getRemainingContactsByPlan(PlanEnum plan) {
-        return Long.valueOf(commonParameterRepository.findByName(plan + "_contacts_amount").getValue());
-    }
 
     private List<ActuationArea> getActuationAreasByCustomerId(Long customerId) {
         List<AreaWorker> areaWorkerList = areaWorkerRepository.findAllByIdWorker(customerId);
@@ -198,7 +185,7 @@ public class WorkerService {
         worker.setCreatedAt(LocalDateTime.now());
         worker.setIsActive(true);
         worker.setPlan(workerRequest.getPlan());
-        worker.setRemainingContacts(getRemainingContactsByPlan(workerRequest.getPlan()));
+        worker.setRemainingContacts(0L);
         worker.setRevealedContacts(0L);
         worker.setRenewalDate(worker.getCreatedAt().plusMonths(1L));
         return worker;
@@ -237,7 +224,6 @@ public class WorkerService {
             if (!workerRequest.getPlan().equals(worker.getPlan())) {
                 worker.setPlan(workerRequest.getPlan());
                 worker.setRenewalDate(worker.getRenewalDate().plusMonths(1));
-                worker.setRemainingContacts(getRemainingContactsByPlan(workerRequest.getPlan()));
             }
         }
     }
