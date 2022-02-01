@@ -1,7 +1,7 @@
-# Simples projeto utilizando Java + Spring
+# Basic project using Java + Spring
 - Spring Boot
 - Kafka
-- Integração API Google Maps
+- Integration with Google Maps API
 - Liquibase
 - JUnit 
 - Mockito
