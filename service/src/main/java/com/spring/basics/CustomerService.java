@@ -113,7 +113,9 @@ public class CustomerService {
 
         logger.info("Received request job for email: {}", requestJobRequest.getEmail());
 
-        if (requestJobRequest.getPriority().equals(PriorityEnum.DATA_ESPECIFICA) && requestJobRequest.getStartDate() == null)
+        if (requestJobRequest.getPriority() != null &&
+                requestJobRequest.getPriority().equals(PriorityEnum.DATA_ESPECIFICA) &&
+                requestJobRequest.getStartDate() == null)
             throw new InvalidJobRequestException("For specific date, job request must have a start date.");
 
         Optional<ActuationArea> actuationArea = actuationAreaRepository.findById(requestJobRequest.getActuationArea());
