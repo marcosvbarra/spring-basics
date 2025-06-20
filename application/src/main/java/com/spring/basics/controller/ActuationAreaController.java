@@ -14,7 +14,7 @@ import javax.validation.Valid;
 import java.util.List;
 
 @RestController
-public class AcuationAreaController implements ActuationAreaApi {
+public class ActuationAreaController implements ActuationAreaApi {
 
     @Autowired
     private ActuationAreaService actuationAreaService;
