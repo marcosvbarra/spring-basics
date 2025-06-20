@@ -138,7 +138,7 @@ public class WorkerServiceTest {
 
         assertEquals(worker.getId(), result.getId());
         assertEquals(actuationArea.getId(), result.getActuationAreas().get(0).getId());
-        assertEquals(avaliation.getId(), result.getId());
+        assertEquals(avaliation.getId(), result.getAvaliations().get(0).getId());
     }
 
     @Test(expected = WorkerNotFoundException.class)
@@ -176,7 +176,7 @@ public class WorkerServiceTest {
 
         assertEquals(worker.getId(), result.getId());
         assertEquals(actuationArea.getId(), result.getActuationAreas().get(0).getId());
-        assertEquals(avaliation.getId(), result.getId());
+        assertEquals(avaliation.getId(), result.getAvaliations().get(0).getId());
     }
 
     @Test(expected = WorkerNotFoundException.class)
@@ -185,7 +185,7 @@ public class WorkerServiceTest {
         Worker worker = new Worker();
         worker.setCpf("12312312312");
 
-        workerService.findWorkerById(1L);
+        workerService.findWorkerByCpf(worker.getCpf());
 
     }
 }
