@@ -3,9 +3,16 @@ package com.spring.basics;
 import com.spring.basics.api.request.CreateCustomerRequest;
 import com.spring.basics.api.request.FindCustomerRequest;
 import com.spring.basics.api.request.UpdateCustomerRequest;
+import com.spring.basics.api.request.RequestJobRequest;
 import com.spring.basics.entity.Customer;
+import com.spring.basics.entity.JobRequest;
+import com.spring.basics.entity.ActuationArea;
 import com.spring.basics.exception.CustomerAlreadyRegisteredException;
 import com.spring.basics.exception.CustomerNotFoundException;
+import com.spring.basics.configuration.KafkaProducer;
+import com.spring.basics.JobRequestRepository;
+import com.spring.basics.ActuationAreaRepository;
+import com.spring.basics.GoogleMapsIntegration;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
@@ -26,6 +33,14 @@ public class CustomerServiceTest {
 
     @Mock
     private CustomerRepository customerRepository;
+    @Mock
+    private KafkaProducer kafkaProducer;
+    @Mock
+    private JobRequestRepository jobRequestRepository;
+    @Mock
+    private ActuationAreaRepository actuationAreaRepository;
+    @Mock
+    private GoogleMapsIntegration googleMapsIntegration;
 
     @Test
     public void shouldCreateACustomer() {
@@ -154,6 +169,33 @@ public class CustomerServiceTest {
         customerService.deleteCustomer(1L);
 
         verify(customerRepository, times(0)).delete(any());
+    }
+
+    @Test
+    public void whenPriorityIsNullShouldNotThrowException() {
+        RequestJobRequest requestJobRequest = new RequestJobRequest();
+        requestJobRequest.setEmail("john@doe.com");
+        requestJobRequest.setName("John");
+        requestJobRequest.setPhoneNumber("11999999999");
+        requestJobRequest.setCep("12345678");
+        requestJobRequest.setJobInformation("info");
+        requestJobRequest.setActuationArea(1L);
+
+        Customer customer = new Customer();
+        customer.setId(1L);
+        customer.setCep("12345678");
+        customer.setCity("City");
+        customer.setLatitude("0");
+        customer.setLongitude("0");
+        customer.setFormattedAddress("addr");
+
+        when(actuationAreaRepository.findById(requestJobRequest.getActuationArea())).thenReturn(Optional.of(new ActuationArea()));
+        when(customerRepository.findByEmail(requestJobRequest.getEmail())).thenReturn(Optional.of(customer));
+        when(jobRequestRepository.saveAndFlush(any(JobRequest.class))).thenAnswer(invocation -> invocation.getArgument(0));
+
+        customerService.requestJob(requestJobRequest);
+
+        verify(jobRequestRepository).saveAndFlush(any(JobRequest.class));
     }
 
 }
