@@ -24,11 +24,11 @@ public interface WorkerApi {
     @ResponseStatus(value = HttpStatus.OK)
     WorkerResponse findWorkerByCpf(@PathVariable String cpf);
 
-    @PutMapping(value = "{id}")
+    @PutMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.OK)
     Worker updateWorker(@RequestBody UpdateWorkerRequest workerRequest, @PathVariable Long id);
 
-    @DeleteMapping(value = "{id}")
+    @DeleteMapping(value = "/{id}")
     @ResponseStatus(value = HttpStatus.NO_CONTENT)
     void deleteWorker(@PathVariable Long id);
 
